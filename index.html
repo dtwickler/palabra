@@ -355,19 +355,34 @@ let rec=null;
 function stopListening(){ try{ rec&&rec.abort(); }catch(e){} rec=null; }
 function listen(w, btn, status){
   if(rec){ stopListening(); return; }
-  const r=new SR(); rec=r; r.lang="es-ES"; r.interimResults=false; r.maxAlternatives=5; r.continuous=false;
-  btn.classList.add("rec"); btn.lastChild.textContent="Luisteren… tik om te stoppen"; status.textContent="";
-  let got=false;
+  // interimResults aan: sommige browsers (o.a. iPhone) leveren nooit een 'final' resultaat bij losse woorden
+  const r=new SR(); rec=r; r.lang="es-ES"; r.interimResults=true; r.maxAlternatives=5; r.continuous=false;
+  btn.classList.add("rec"); btn.lastChild.textContent="Luisteren… tik om te stoppen"; status.textContent="Spreek nu het Spaanse woord in";
+  let done=false, errored=false, last=[], heardSound=false;
+  const finishWith=alts=>{ if(done||!alts.length) return; done=true; S.heard={text:alts[0], ok:alts.some(a=>matches(a,w.es))}; flip(); };
+  r.onaudiostart=()=>{ status.textContent="Microfoon staat aan…"; };
+  r.onsoundstart=()=>{ heardSound=true; status.textContent="Ik hoor geluid…"; };
+  r.onspeechstart=()=>{ heardSound=true; status.textContent="Ik hoor je…"; };
   r.onresult=e=>{
-    got=true; const alts=[...e.results[0]].map(a=>a.transcript);
-    S.heard={text:alts[0], ok:alts.some(a=>matches(a,w.es))}; flip();
+    const res=e.results[e.results.length-1];
+    last=[...res].map(a=>a.transcript).filter(t=>t&&t.trim());
+    if(last.length) status.textContent="Gehoord: “"+last[0]+"”";
+    if(res.isFinal) finishWith(last);
+    else if(last.some(a=>matches(a,w.es))) { finishWith(last); try{ r.stop(); }catch(_){} }
   };
   r.onerror=e=>{
-    got=true;
-    status.textContent = (e.error==="not-allowed"||e.error==="service-not-allowed") ? "Geen toegang tot de microfoon. Sta dit toe in de instellingen van je telefoon."
-      : e.error==="no-speech" ? "Niets gehoord. Probeer het nog eens." : e.error==="aborted" ? "" : "Dat lukte niet. Probeer het nog eens.";
+    errored=true;
+    status.textContent = (e.error==="not-allowed"||e.error==="service-not-allowed") ? "Geen toegang tot spraakherkenning. Sta microfoon (en op iPhone: Dicteren) toe."
+      : e.error==="no-speech" ? "Niets gehoord. Spreek iets luider of dichter bij de microfoon."
+      : e.error==="audio-capture" ? "Geen microfoon gevonden."
+      : e.error==="network" ? "Spraakherkenning heeft internet nodig en kon de dienst niet bereiken."
+      : e.error==="aborted" ? "" : "Dat lukte niet (foutcode: "+e.error+").";
   };
-  r.onend=()=>{ rec=null; btn.classList.remove("rec"); btn.lastChild.textContent="Spreek in"; if(!got) status.textContent="Niets gehoord. Probeer het nog eens."; };
+  r.onend=()=>{
+    rec=null; btn.classList.remove("rec"); btn.lastChild.textContent="Spreek in";
+    if(!done && last.length){ finishWith(last); return; }
+    if(!done && !errored) status.textContent = heardSound ? "Ik hoorde geluid, maar herkende geen woord. Probeer het nog eens." : "Niets gehoord. Controleer of de juiste microfoon is gekozen.";
+  };
   try{ r.start(); }catch(e){ rec=null; btn.classList.remove("rec"); btn.lastChild.textContent="Spreek in"; status.textContent="Inspreken lukt niet in deze browser."; }
 }
 
