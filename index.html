@@ -149,6 +149,42 @@ details.settings[open] summary::after{content:"–"}
 .legend{font-size:13px;color:var(--muted);margin:0}
 .empty{color:var(--muted);text-align:center;padding:24px 0}
 
+/* Modus */
+#app[data-m="conj"] .words-only, #app[data-m="words"] .conj-only{display:none!important}
+.seg.mode button{font-size:16px;padding:12px 6px}
+/* Vervoegen */
+.ccard{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:24px 18px 18px;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden}
+.ccard::before{content:"";position:absolute;inset:0 0 auto 0;height:10px;background:linear-gradient(90deg,#EC6FA0 0 20%,#8E5BA8 20% 40%,#3FB8C9 40% 60%,#4E9A3A 60% 80%,#E9D84A 80%)}
+.ctense{display:flex;flex-direction:column;gap:2px}
+.ctense #c-tense-nl{font-size:13px;color:var(--muted)}
+.cverb{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.cverb b{font-family:var(--f-display);font-size:28px;font-weight:800}
+.cverb span{color:var(--muted)}
+.newtag{font-size:12px;font-weight:700;color:var(--saffron)!important;text-transform:uppercase;letter-spacing:.06em}
+.cperson{font-size:15px;color:var(--muted)}
+.cperson b{color:var(--cobalt);font-size:17px}
+.csentence{font-size:20px;line-height:1.4;margin:4px 0;font-weight:500}
+.gap{display:inline-block;min-width:90px;border-bottom:2px dashed var(--cobalt);color:var(--muted);text-align:center;padding:0 4px}
+.gap.filled{color:var(--cobalt);font-weight:700;border-bottom-style:solid}
+.answer{width:100%;font-size:20px;padding:12px 14px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+.answer:focus{border-color:var(--cobalt);outline:none}
+.answer.right{border-color:var(--good);background:var(--good-soft)}
+.answer.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.accents{display:flex;gap:6px;flex-wrap:wrap}
+.accents button{min-width:40px;padding:8px 0;border-radius:10px;background:var(--cobalt-soft);color:var(--ink);font-size:17px;font-weight:600;flex:1}
+.feedback{font-weight:700;min-height:22px}
+.feedback.ok{color:var(--good)} .feedback.miss{color:var(--bad)}
+.ctable{display:grid;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.crow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;padding:7px 12px;border-top:1px solid var(--line);font-size:15px}
+.crow:first-child{border-top:0}
+.crow .cp{color:var(--muted)} .crow .cf{font-weight:600}
+.crow.hi{background:var(--cobalt-soft)} .crow.hi .cf{color:var(--cobalt)}
+.crow-actions{display:flex;justify-content:space-between;align-items:center;gap:12px}
+details.vt{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 14px}
+details.vt summary{cursor:pointer;padding:12px 0;display:flex;gap:10px;align-items:baseline;list-style:none}
+details.vt summary::-webkit-details-marker{display:none}
+details.vt summary span{color:var(--muted);font-size:14px}
+.vt-tense{display:flex;flex-direction:column;gap:6px;padding-bottom:14px}
 @media (prefers-reduced-motion:reduce){.card,.track i,.switch,.switch::after{transition:none}.mic.rec{animation:none}}
 </style>
 </head>
@@ -162,13 +198,18 @@ details.settings[open] summary::after{content:"–"}
       <div><h1>Palabra a Palabra</h1><p id="subtitle">Woorden laden…</p></div>
     </div>
 
+    <div class="seg mode" role="group" aria-label="Wat wil je oefenen">
+      <button data-mode="words">Woorden</button>
+      <button data-mode="conj">Vervoegen</button>
+    </div>
+
     <div class="stats">
       <div class="stat due"><b id="st-due">0</b><span>te herhalen</span></div>
       <div class="stat"><b id="st-new">0</b><span>nieuw</span></div>
       <div class="stat"><b id="st-known">0</b><span>onder de knie</span></div>
     </div>
 
-    <div class="group">
+    <div class="group words-only">
       <span class="eyebrow">Richting</span>
       <div class="seg" role="group" aria-label="Richting">
         <button data-dir="es-nl">Spaans → <span class="tl">NL</span></button>
@@ -176,9 +217,14 @@ details.settings[open] summary::after{content:"–"}
       </div>
     </div>
 
-    <div class="group">
+    <div class="group words-only">
       <label class="eyebrow" for="cat">Onderwerp</label>
       <select class="select" id="cat"></select>
+    </div>
+
+    <div class="group conj-only">
+      <span class="eyebrow">Welke tijden oefen je?</span>
+      <div class="group" id="levels"></div>
     </div>
 
     <div class="group">
@@ -190,13 +236,13 @@ details.settings[open] summary::after{content:"–"}
       <summary>Instellingen</summary>
       <div class="settings-body">
         <div class="group">
-          <span class="eyebrow">Nieuwe woorden per ronde</span>
+          <span class="eyebrow" id="newper-label">Nieuwe woorden per ronde</span>
           <div class="seg" role="group" aria-label="Nieuwe woorden per ronde" id="newper"></div>
         </div>
-        <button class="toggle" id="auto" role="switch" aria-checked="false">
+        <button class="toggle words-only" id="auto" role="switch" aria-checked="false">
           <span>Spaans automatisch uitspreken</span><span class="switch" aria-hidden="true"></span>
         </button>
-        <button class="toggle" id="mic" role="switch" aria-checked="false">
+        <button class="toggle words-only" id="mic" role="switch" aria-checked="false">
           <span>Woorden inspreken<small>Bij <span class="tl">NL</span> → Spaans zeg je het Spaanse woord hardop</small></span><span class="switch" aria-hidden="true"></span>
         </button>
         <div class="foot">
@@ -254,6 +300,44 @@ details.settings[open] summary::after{content:"–"}
     <input class="search" id="search" type="search" placeholder="Zoek een woord" autocomplete="off" autocapitalize="off" spellcheck="false">
     <p class="legend" id="legend"></p>
     <div id="list-body" class="group" style="gap:18px"></div>
+  </section>
+
+  <!-- VERVOEGEN -->
+  <section id="conj" hidden>
+    <div class="bar">
+      <button class="close" id="cquit" aria-label="Stoppen">✕</button>
+      <div class="track"><i id="cbar"></i></div>
+      <span class="count" id="ccount">0/0</span>
+    </div>
+    <div class="ccard">
+      <div class="ctense"><span class="eyebrow" id="c-tense"></span><span id="c-tense-nl"></span></div>
+      <div class="cverb"><b id="c-verb"></b><span id="c-verb-en"></span><span class="newtag" id="c-new">nieuw</span></div>
+      <div class="cperson">Persoon: <b id="c-person"></b></div>
+      <p class="csentence" id="c-sentence"></p>
+      <input class="answer" id="c-input" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-label="Typ de vervoeging" placeholder="Typ de vervoeging">
+      <div class="accents" id="accents"><button>á</button><button>é</button><button>í</button><button>ó</button><button>ú</button><button>ñ</button><button>ü</button></div>
+      <div class="feedback" id="c-feedback" aria-live="polite"></div>
+      <div id="c-table"></div>
+    </div>
+    <div style="flex:1"></div>
+    <button class="primary" id="c-check">Controleer</button>
+    <div class="group" id="c-after" hidden>
+      <div class="crow-actions">
+        <button class="speak" id="c-speak">Luister</button>
+        <button class="link" id="c-override" hidden>Toch goed rekenen</button>
+      </div>
+      <button class="primary" id="c-next">Volgende</button>
+    </div>
+  </section>
+
+  <!-- TABELLEN -->
+  <section id="tables" hidden>
+    <div class="list-head">
+      <button class="close" id="tables-back" aria-label="Terug">←</button>
+      <h2>Vervoegtabellen</h2>
+    </div>
+    <input class="search" id="tsearch" type="search" placeholder="Zoek een werkwoord" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div id="tables-body" class="group"></div>
   </section>
 </div>
 
@@ -315,7 +399,7 @@ function parseWords(text){
 }
 
 /* ---------- Opslag ---------- */
-function blank(){ return {dir:"es-nl", cat:"all", auto:false, mic:false, newPer:10, seed:Math.floor(Math.random()*2**31), p:{"es-nl":{}, "nl-es":{}}}; }
+function blank(){ return {mode:"words", levels:[1], c:{}, dir:"es-nl", cat:"all", auto:false, mic:false, newPer:10, seed:Math.floor(Math.random()*2**31), p:{"es-nl":{}, "nl-es":{}}}; }
 function load(){ try{ const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.p&&s.p["es-nl"]) return Object.assign(blank(),s); }catch(e){} return blank(); }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
 let state=load(); save();
@@ -391,7 +475,7 @@ const $=id=>document.getElementById(id);
 const el=(tag,cls,text)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; };
 const SPK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
 const MIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
-function show(id){ for(const s of ["home","study","done","list"]) $(s).hidden=s!==id; window.scrollTo(0,0); }
+function show(id){ for(const s of ["home","study","done","list","conj","tables"]) $(s).hidden=s!==id; window.scrollTo(0,0); }
 function spanishWord(es){
   const wrap=el("div","word"), m=es.match(/^(el|la|los|las) (.+)$/);
   if(m){ wrap.append(el("span","art",m[1]+" ")); wrap.append(document.createTextNode(m[2])); } else wrap.textContent=es;
@@ -422,16 +506,21 @@ function renderHome(){
   $("mic").setAttribute("aria-checked",state.mic); $("mic").hidden=!canListen;
   const due=Math.min(c.due,MAX_REVIEW), n=due+Math.min(c.nw,state.newPer);
   $("start").textContent = n>0 ? `Start oefenen · ${n} kaarten` : "Alles bijgewerkt · extra oefenen";
+  $("open-list").textContent="Woordenlijst bekijken"; $("newper-label").textContent="Nieuwe woorden per ronde";
+  $("app").dataset.m=state.mode;
+  for(const b of document.querySelectorAll("[data-mode]")) b.setAttribute("aria-pressed", b.dataset.mode===state.mode);
+  if(state.mode==="conj") renderConjHome();
 }
+for(const b of document.querySelectorAll("[data-mode]")) b.onclick=()=>{ state.mode=b.dataset.mode; save(); renderHome(); };
 for(const b of document.querySelectorAll("[data-dir]")) b.onclick=()=>{ state.dir=b.dataset.dir; save(); renderHome(); };
 $("cat").onchange=e=>{ state.cat=e.target.value; save(); renderHome(); };
 $("auto").onclick=()=>{ state.auto=!state.auto; save(); renderHome(); };
 $("mic").onclick=()=>{ state.mic=!state.mic; if(state.mic) state.dir="nl-es"; save(); renderHome(); };
-$("start").onclick=startSession;
-$("open-list").onclick=()=>{ $("search").value=""; renderList(); show("list"); };
+$("start").onclick=()=> state.mode==="conj" ? startConj() : startSession();
+$("open-list").onclick=()=>{ if(state.mode==="conj"){ $("tsearch").value=""; renderTables(); show("tables"); return; } $("search").value=""; renderList(); show("list"); };
 $("reset").onclick=()=>{ $("reset").hidden=true; $("reset-confirm").hidden=false; };
 $("reset-no").onclick=()=>{ $("reset").hidden=false; $("reset-confirm").hidden=true; };
-$("reset-yes").onclick=()=>{ state.p={"es-nl":{},"nl-es":{}}; save(); $("reset-no").onclick(); renderHome(); };
+$("reset-yes").onclick=()=>{ state.p={"es-nl":{},"nl-es":{}}; state.c={}; save(); $("reset-no").onclick(); renderHome(); };
 
 /* ---------- Ronde ---------- */
 let S=null;
@@ -558,6 +647,195 @@ function renderList(){
 }
 let searchT; $("search").addEventListener("input",()=>{ clearTimeout(searchT); searchT=setTimeout(renderList,120); });
 $("list-back").onclick=()=>show("home");
+
+/* ---------- Vervoegen ----------
+   Item = werkwoord + tijd; per keer een willekeurige persoon. Zelfde herhaalschema als de woorden.
+   Vervoegingen: gegenereerd en gecontroleerd vooraf (zie CONJ). */
+const CONJ = [{"inf":"ser","en":"to be (who/what)","cs":"muy puntual","cp":"muy puntuales","imp":true,"f":{"pres":["soy","eres","es","somos","sois","son"],"perf":["he sido","has sido","ha sido","hemos sido","habéis sido","han sido"],"indef":["fui","fuiste","fue","fuimos","fuisteis","fueron"],"imperf":["era","eras","era","éramos","erais","eran"],"fut":["seré","serás","será","seremos","seréis","serán"],"cond":["sería","serías","sería","seríamos","seríais","serían"],"plusc":["había sido","habías sido","había sido","habíamos sido","habíais sido","habían sido"],"subj":["sea","seas","sea","seamos","seáis","sean"],"imp":[null,"sé","sea","seamos","sed","sean"]}},{"inf":"estar","en":"to be (where/how)","cs":"en casa","cp":"en casa","imp":false,"f":{"pres":["estoy","estás","está","estamos","estáis","están"],"perf":["he estado","has estado","ha estado","hemos estado","habéis estado","han estado"],"indef":["estuve","estuviste","estuvo","estuvimos","estuvisteis","estuvieron"],"imperf":["estaba","estabas","estaba","estábamos","estabais","estaban"],"fut":["estaré","estarás","estará","estaremos","estaréis","estarán"],"cond":["estaría","estarías","estaría","estaríamos","estaríais","estarían"],"plusc":["había estado","habías estado","había estado","habíamos estado","habíais estado","habían estado"],"subj":["esté","estés","esté","estemos","estéis","estén"],"imp":[null,"está","esté","estemos","estad","estén"]}},{"inf":"tener","en":"to have","cs":"mucho trabajo","cp":"mucho trabajo","imp":false,"f":{"pres":["tengo","tienes","tiene","tenemos","tenéis","tienen"],"perf":["he tenido","has tenido","ha tenido","hemos tenido","habéis tenido","han tenido"],"indef":["tuve","tuviste","tuvo","tuvimos","tuvisteis","tuvieron"],"imperf":["tenía","tenías","tenía","teníamos","teníais","tenían"],"fut":["tendré","tendrás","tendrá","tendremos","tendréis","tendrán"],"cond":["tendría","tendrías","tendría","tendríamos","tendríais","tendrían"],"plusc":["había tenido","habías tenido","había tenido","habíamos tenido","habíais tenido","habían tenido"],"subj":["tenga","tengas","tenga","tengamos","tengáis","tengan"],"imp":[null,"ten","tenga","tengamos","tened","tengan"]}},{"inf":"hacer","en":"to do / to make","cs":"los deberes","cp":"los deberes","imp":true,"f":{"pres":["hago","haces","hace","hacemos","hacéis","hacen"],"perf":["he hecho","has hecho","ha hecho","hemos hecho","habéis hecho","han hecho"],"indef":["hice","hiciste","hizo","hicimos","hicisteis","hicieron"],"imperf":["hacía","hacías","hacía","hacíamos","hacíais","hacían"],"fut":["haré","harás","hará","haremos","haréis","harán"],"cond":["haría","harías","haría","haríamos","haríais","harían"],"plusc":["había hecho","habías hecho","había hecho","habíamos hecho","habíais hecho","habían hecho"],"subj":["haga","hagas","haga","hagamos","hagáis","hagan"],"imp":[null,"haz","haga","hagamos","haced","hagan"]}},{"inf":"ir","en":"to go","cs":"al mercado","cp":"al mercado","imp":true,"f":{"pres":["voy","vas","va","vamos","vais","van"],"perf":["he ido","has ido","ha ido","hemos ido","habéis ido","han ido"],"indef":["fui","fuiste","fue","fuimos","fuisteis","fueron"],"imperf":["iba","ibas","iba","íbamos","ibais","iban"],"fut":["iré","irás","irá","iremos","iréis","irán"],"cond":["iría","irías","iría","iríamos","iríais","irían"],"plusc":["había ido","habías ido","había ido","habíamos ido","habíais ido","habían ido"],"subj":["vaya","vayas","vaya","vayamos","vayáis","vayan"],"imp":[null,"ve","vaya","vayamos","id","vayan"]}},{"inf":"poder","en":"to be able to / can","cs":"venir a la fiesta","cp":"venir a la fiesta","imp":false,"f":{"pres":["puedo","puedes","puede","podemos","podéis","pueden"],"perf":["he podido","has podido","ha podido","hemos podido","habéis podido","han podido"],"indef":["pude","pudiste","pudo","pudimos","pudisteis","pudieron"],"imperf":["podía","podías","podía","podíamos","podíais","podían"],"fut":["podré","podrás","podrá","podremos","podréis","podrán"],"cond":["podría","podrías","podría","podríamos","podríais","podrían"],"plusc":["había podido","habías podido","había podido","habíamos podido","habíais podido","habían podido"],"subj":["pueda","puedas","pueda","podamos","podáis","puedan"],"imp":[null,"puede","pueda","podamos","poded","puedan"]}},{"inf":"decir","en":"to say / to tell","cs":"la verdad","cp":"la verdad","imp":true,"f":{"pres":["digo","dices","dice","decimos","decís","dicen"],"perf":["he dicho","has dicho","ha dicho","hemos dicho","habéis dicho","han dicho"],"indef":["dije","dijiste","dijo","dijimos","dijisteis","dijeron"],"imperf":["decía","decías","decía","decíamos","decíais","decían"],"fut":["diré","dirás","dirá","diremos","diréis","dirán"],"cond":["diría","dirías","diría","diríamos","diríais","dirían"],"plusc":["había dicho","habías dicho","había dicho","habíamos dicho","habíais dicho","habían dicho"],"subj":["diga","digas","diga","digamos","digáis","digan"],"imp":[null,"di","diga","digamos","decid","digan"]}},{"inf":"dar","en":"to give","cs":"un regalo a Ana","cp":"un regalo a Ana","imp":true,"f":{"pres":["doy","das","da","damos","dais","dan"],"perf":["he dado","has dado","ha dado","hemos dado","habéis dado","han dado"],"indef":["di","diste","dio","dimos","disteis","dieron"],"imperf":["daba","dabas","daba","dábamos","dabais","daban"],"fut":["daré","darás","dará","daremos","daréis","darán"],"cond":["daría","darías","daría","daríamos","daríais","darían"],"plusc":["había dado","habías dado","había dado","habíamos dado","habíais dado","habían dado"],"subj":["dé","des","dé","demos","deis","den"],"imp":[null,"da","dé","demos","dad","den"]}},{"inf":"ver","en":"to see / to watch","cs":"una película","cp":"una película","imp":true,"f":{"pres":["veo","ves","ve","vemos","veis","ven"],"perf":["he visto","has visto","ha visto","hemos visto","habéis visto","han visto"],"indef":["vi","viste","vio","vimos","visteis","vieron"],"imperf":["veía","veías","veía","veíamos","veíais","veían"],"fut":["veré","verás","verá","veremos","veréis","verán"],"cond":["vería","verías","vería","veríamos","veríais","verían"],"plusc":["había visto","habías visto","había visto","habíamos visto","habíais visto","habían visto"],"subj":["vea","veas","vea","veamos","veáis","vean"],"imp":[null,"ve","vea","veamos","ved","vean"]}},{"inf":"saber","en":"to know","cs":"la respuesta","cp":"la respuesta","imp":false,"f":{"pres":["sé","sabes","sabe","sabemos","sabéis","saben"],"perf":["he sabido","has sabido","ha sabido","hemos sabido","habéis sabido","han sabido"],"indef":["supe","supiste","supo","supimos","supisteis","supieron"],"imperf":["sabía","sabías","sabía","sabíamos","sabíais","sabían"],"fut":["sabré","sabrás","sabrá","sabremos","sabréis","sabrán"],"cond":["sabría","sabrías","sabría","sabríamos","sabríais","sabrían"],"plusc":["había sabido","habías sabido","había sabido","habíamos sabido","habíais sabido","habían sabido"],"subj":["sepa","sepas","sepa","sepamos","sepáis","sepan"],"imp":[null,"sabe","sepa","sepamos","sabed","sepan"]}},{"inf":"querer","en":"to want","cs":"un café","cp":"un café","imp":false,"f":{"pres":["quiero","quieres","quiere","queremos","queréis","quieren"],"perf":["he querido","has querido","ha querido","hemos querido","habéis querido","han querido"],"indef":["quise","quisiste","quiso","quisimos","quisisteis","quisieron"],"imperf":["quería","querías","quería","queríamos","queríais","querían"],"fut":["querré","querrás","querrá","querremos","querréis","querrán"],"cond":["querría","querrías","querría","querríamos","querríais","querrían"],"plusc":["había querido","habías querido","había querido","habíamos querido","habíais querido","habían querido"],"subj":["quiera","quieras","quiera","queramos","queráis","quieran"],"imp":[null,"quiere","quiera","queramos","quered","quieran"]}},{"inf":"llegar","en":"to arrive","cs":"tarde","cp":"tarde","imp":false,"f":{"pres":["llego","llegas","llega","llegamos","llegáis","llegan"],"perf":["he llegado","has llegado","ha llegado","hemos llegado","habéis llegado","han llegado"],"indef":["llegué","llegaste","llegó","llegamos","llegasteis","llegaron"],"imperf":["llegaba","llegabas","llegaba","llegábamos","llegabais","llegaban"],"fut":["llegaré","llegarás","llegará","llegaremos","llegaréis","llegarán"],"cond":["llegaría","llegarías","llegaría","llegaríamos","llegaríais","llegarían"],"plusc":["había llegado","habías llegado","había llegado","habíamos llegado","habíais llegado","habían llegado"],"subj":["llegue","llegues","llegue","lleguemos","lleguéis","lleguen"],"imp":[null,"llega","llegue","lleguemos","llegad","lleguen"]}},{"inf":"poner","en":"to put / to set","cs":"la mesa","cp":"la mesa","imp":true,"f":{"pres":["pongo","pones","pone","ponemos","ponéis","ponen"],"perf":["he puesto","has puesto","ha puesto","hemos puesto","habéis puesto","han puesto"],"indef":["puse","pusiste","puso","pusimos","pusisteis","pusieron"],"imperf":["ponía","ponías","ponía","poníamos","poníais","ponían"],"fut":["pondré","pondrás","pondrá","pondremos","pondréis","pondrán"],"cond":["pondría","pondrías","pondría","pondríamos","pondríais","pondrían"],"plusc":["había puesto","habías puesto","había puesto","habíamos puesto","habíais puesto","habían puesto"],"subj":["ponga","pongas","ponga","pongamos","pongáis","pongan"],"imp":[null,"pon","ponga","pongamos","poned","pongan"]}},{"inf":"venir","en":"to come","cs":"a la fiesta","cp":"a la fiesta","imp":true,"f":{"pres":["vengo","vienes","viene","venimos","venís","vienen"],"perf":["he venido","has venido","ha venido","hemos venido","habéis venido","han venido"],"indef":["vine","viniste","vino","vinimos","vinisteis","vinieron"],"imperf":["venía","venías","venía","veníamos","veníais","venían"],"fut":["vendré","vendrás","vendrá","vendremos","vendréis","vendrán"],"cond":["vendría","vendrías","vendría","vendríamos","vendríais","vendrían"],"plusc":["había venido","habías venido","había venido","habíamos venido","habíais venido","habían venido"],"subj":["venga","vengas","venga","vengamos","vengáis","vengan"],"imp":[null,"ven","venga","vengamos","venid","vengan"]}},{"inf":"salir","en":"to go out / to leave","cs":"con amigos","cp":"con amigos","imp":true,"f":{"pres":["salgo","sales","sale","salimos","salís","salen"],"perf":["he salido","has salido","ha salido","hemos salido","habéis salido","han salido"],"indef":["salí","saliste","salió","salimos","salisteis","salieron"],"imperf":["salía","salías","salía","salíamos","salíais","salían"],"fut":["saldré","saldrás","saldrá","saldremos","saldréis","saldrán"],"cond":["saldría","saldrías","saldría","saldríamos","saldríais","saldrían"],"plusc":["había salido","habías salido","había salido","habíamos salido","habíais salido","habían salido"],"subj":["salga","salgas","salga","salgamos","salgáis","salgan"],"imp":[null,"sal","salga","salgamos","salid","salgan"]}},{"inf":"volver","en":"to return","cs":"a casa","cp":"a casa","imp":true,"f":{"pres":["vuelvo","vuelves","vuelve","volvemos","volvéis","vuelven"],"perf":["he vuelto","has vuelto","ha vuelto","hemos vuelto","habéis vuelto","han vuelto"],"indef":["volví","volviste","volvió","volvimos","volvisteis","volvieron"],"imperf":["volvía","volvías","volvía","volvíamos","volvíais","volvían"],"fut":["volveré","volverás","volverá","volveremos","volveréis","volverán"],"cond":["volvería","volverías","volvería","volveríamos","volveríais","volverían"],"plusc":["había vuelto","habías vuelto","había vuelto","habíamos vuelto","habíais vuelto","habían vuelto"],"subj":["vuelva","vuelvas","vuelva","volvamos","volváis","vuelvan"],"imp":[null,"vuelve","vuelva","volvamos","volved","vuelvan"]}},{"inf":"pensar","en":"to think","cs":"en el viaje","cp":"en el viaje","imp":true,"f":{"pres":["pienso","piensas","piensa","pensamos","pensáis","piensan"],"perf":["he pensado","has pensado","ha pensado","hemos pensado","habéis pensado","han pensado"],"indef":["pensé","pensaste","pensó","pensamos","pensasteis","pensaron"],"imperf":["pensaba","pensabas","pensaba","pensábamos","pensabais","pensaban"],"fut":["pensaré","pensarás","pensará","pensaremos","pensaréis","pensarán"],"cond":["pensaría","pensarías","pensaría","pensaríamos","pensaríais","pensarían"],"plusc":["había pensado","habías pensado","había pensado","habíamos pensado","habíais pensado","habían pensado"],"subj":["piense","pienses","piense","pensemos","penséis","piensen"],"imp":[null,"piensa","piense","pensemos","pensad","piensen"]}},{"inf":"conocer","en":"to know (people/places)","cs":"a mucha gente","cp":"a mucha gente","imp":false,"f":{"pres":["conozco","conoces","conoce","conocemos","conocéis","conocen"],"perf":["he conocido","has conocido","ha conocido","hemos conocido","habéis conocido","han conocido"],"indef":["conocí","conociste","conoció","conocimos","conocisteis","conocieron"],"imperf":["conocía","conocías","conocía","conocíamos","conocíais","conocían"],"fut":["conoceré","conocerás","conocerá","conoceremos","conoceréis","conocerán"],"cond":["conocería","conocerías","conocería","conoceríamos","conoceríais","conocerían"],"plusc":["había conocido","habías conocido","había conocido","habíamos conocido","habíais conocido","habían conocido"],"subj":["conozca","conozcas","conozca","conozcamos","conozcáis","conozcan"],"imp":[null,"conoce","conozca","conozcamos","conoced","conozcan"]}},{"inf":"vivir","en":"to live","cs":"en Madrid","cp":"en Madrid","imp":true,"f":{"pres":["vivo","vives","vive","vivimos","vivís","viven"],"perf":["he vivido","has vivido","ha vivido","hemos vivido","habéis vivido","han vivido"],"indef":["viví","viviste","vivió","vivimos","vivisteis","vivieron"],"imperf":["vivía","vivías","vivía","vivíamos","vivíais","vivían"],"fut":["viviré","vivirás","vivirá","viviremos","viviréis","vivirán"],"cond":["viviría","vivirías","viviría","viviríamos","viviríais","vivirían"],"plusc":["había vivido","habías vivido","había vivido","habíamos vivido","habíais vivido","habían vivido"],"subj":["viva","vivas","viva","vivamos","viváis","vivan"],"imp":[null,"vive","viva","vivamos","vivid","vivan"]}},{"inf":"hablar","en":"to speak / to talk","cs":"con la vecina","cp":"con la vecina","imp":true,"f":{"pres":["hablo","hablas","habla","hablamos","habláis","hablan"],"perf":["he hablado","has hablado","ha hablado","hemos hablado","habéis hablado","han hablado"],"indef":["hablé","hablaste","habló","hablamos","hablasteis","hablaron"],"imperf":["hablaba","hablabas","hablaba","hablábamos","hablabais","hablaban"],"fut":["hablaré","hablarás","hablará","hablaremos","hablaréis","hablarán"],"cond":["hablaría","hablarías","hablaría","hablaríamos","hablaríais","hablarían"],"plusc":["había hablado","habías hablado","había hablado","habíamos hablado","habíais hablado","habían hablado"],"subj":["hable","hables","hable","hablemos","habléis","hablen"],"imp":[null,"habla","hable","hablemos","hablad","hablen"]}},{"inf":"comer","en":"to eat","cs":"paella","cp":"paella","imp":true,"f":{"pres":["como","comes","come","comemos","coméis","comen"],"perf":["he comido","has comido","ha comido","hemos comido","habéis comido","han comido"],"indef":["comí","comiste","comió","comimos","comisteis","comieron"],"imperf":["comía","comías","comía","comíamos","comíais","comían"],"fut":["comeré","comerás","comerá","comeremos","comeréis","comerán"],"cond":["comería","comerías","comería","comeríamos","comeríais","comerían"],"plusc":["había comido","habías comido","había comido","habíamos comido","habíais comido","habían comido"],"subj":["coma","comas","coma","comamos","comáis","coman"],"imp":[null,"come","coma","comamos","comed","coman"]}},{"inf":"beber","en":"to drink","cs":"agua","cp":"agua","imp":true,"f":{"pres":["bebo","bebes","bebe","bebemos","bebéis","beben"],"perf":["he bebido","has bebido","ha bebido","hemos bebido","habéis bebido","han bebido"],"indef":["bebí","bebiste","bebió","bebimos","bebisteis","bebieron"],"imperf":["bebía","bebías","bebía","bebíamos","bebíais","bebían"],"fut":["beberé","beberás","beberá","beberemos","beberéis","beberán"],"cond":["bebería","beberías","bebería","beberíamos","beberíais","beberían"],"plusc":["había bebido","habías bebido","había bebido","habíamos bebido","habíais bebido","habían bebido"],"subj":["beba","bebas","beba","bebamos","bebáis","beban"],"imp":[null,"bebe","beba","bebamos","bebed","beban"]}},{"inf":"trabajar","en":"to work","cs":"en la oficina","cp":"en la oficina","imp":true,"f":{"pres":["trabajo","trabajas","trabaja","trabajamos","trabajáis","trabajan"],"perf":["he trabajado","has trabajado","ha trabajado","hemos trabajado","habéis trabajado","han trabajado"],"indef":["trabajé","trabajaste","trabajó","trabajamos","trabajasteis","trabajaron"],"imperf":["trabajaba","trabajabas","trabajaba","trabajábamos","trabajabais","trabajaban"],"fut":["trabajaré","trabajarás","trabajará","trabajaremos","trabajaréis","trabajarán"],"cond":["trabajaría","trabajarías","trabajaría","trabajaríamos","trabajaríais","trabajarían"],"plusc":["había trabajado","habías trabajado","había trabajado","habíamos trabajado","habíais trabajado","habían trabajado"],"subj":["trabaje","trabajes","trabaje","trabajemos","trabajéis","trabajen"],"imp":[null,"trabaja","trabaje","trabajemos","trabajad","trabajen"]}},{"inf":"estudiar","en":"to study","cs":"español","cp":"español","imp":true,"f":{"pres":["estudio","estudias","estudia","estudiamos","estudiáis","estudian"],"perf":["he estudiado","has estudiado","ha estudiado","hemos estudiado","habéis estudiado","han estudiado"],"indef":["estudié","estudiaste","estudió","estudiamos","estudiasteis","estudiaron"],"imperf":["estudiaba","estudiabas","estudiaba","estudiábamos","estudiabais","estudiaban"],"fut":["estudiaré","estudiarás","estudiará","estudiaremos","estudiaréis","estudiarán"],"cond":["estudiaría","estudiarías","estudiaría","estudiaríamos","estudiaríais","estudiarían"],"plusc":["había estudiado","habías estudiado","había estudiado","habíamos estudiado","habíais estudiado","habían estudiado"],"subj":["estudie","estudies","estudie","estudiemos","estudiéis","estudien"],"imp":[null,"estudia","estudie","estudiemos","estudiad","estudien"]}},{"inf":"escribir","en":"to write","cs":"una carta","cp":"una carta","imp":true,"f":{"pres":["escribo","escribes","escribe","escribimos","escribís","escriben"],"perf":["he escrito","has escrito","ha escrito","hemos escrito","habéis escrito","han escrito"],"indef":["escribí","escribiste","escribió","escribimos","escribisteis","escribieron"],"imperf":["escribía","escribías","escribía","escribíamos","escribíais","escribían"],"fut":["escribiré","escribirás","escribirá","escribiremos","escribiréis","escribirán"],"cond":["escribiría","escribirías","escribiría","escribiríamos","escribiríais","escribirían"],"plusc":["había escrito","habías escrito","había escrito","habíamos escrito","habíais escrito","habían escrito"],"subj":["escriba","escribas","escriba","escribamos","escribáis","escriban"],"imp":[null,"escribe","escriba","escribamos","escribid","escriban"]}},{"inf":"leer","en":"to read","cs":"el periódico","cp":"el periódico","imp":true,"f":{"pres":["leo","lees","lee","leemos","leéis","leen"],"perf":["he leído","has leído","ha leído","hemos leído","habéis leído","han leído"],"indef":["leí","leíste","leyó","leímos","leísteis","leyeron"],"imperf":["leía","leías","leía","leíamos","leíais","leían"],"fut":["leeré","leerás","leerá","leeremos","leeréis","leerán"],"cond":["leería","leerías","leería","leeríamos","leeríais","leerían"],"plusc":["había leído","habías leído","había leído","habíamos leído","habíais leído","habían leído"],"subj":["lea","leas","lea","leamos","leáis","lean"],"imp":[null,"lee","lea","leamos","leed","lean"]}},{"inf":"comprar","en":"to buy","cs":"pan","cp":"pan","imp":true,"f":{"pres":["compro","compras","compra","compramos","compráis","compran"],"perf":["he comprado","has comprado","ha comprado","hemos comprado","habéis comprado","han comprado"],"indef":["compré","compraste","compró","compramos","comprasteis","compraron"],"imperf":["compraba","comprabas","compraba","comprábamos","comprabais","compraban"],"fut":["compraré","comprarás","comprará","compraremos","compraréis","comprarán"],"cond":["compraría","comprarías","compraría","compraríamos","compraríais","comprarían"],"plusc":["había comprado","habías comprado","había comprado","habíamos comprado","habíais comprado","habían comprado"],"subj":["compre","compres","compre","compremos","compréis","compren"],"imp":[null,"compra","compre","compremos","comprad","compren"]}},{"inf":"pagar","en":"to pay","cs":"la cuenta","cp":"la cuenta","imp":true,"f":{"pres":["pago","pagas","paga","pagamos","pagáis","pagan"],"perf":["he pagado","has pagado","ha pagado","hemos pagado","habéis pagado","han pagado"],"indef":["pagué","pagaste","pagó","pagamos","pagasteis","pagaron"],"imperf":["pagaba","pagabas","pagaba","pagábamos","pagabais","pagaban"],"fut":["pagaré","pagarás","pagará","pagaremos","pagaréis","pagarán"],"cond":["pagaría","pagarías","pagaría","pagaríamos","pagaríais","pagarían"],"plusc":["había pagado","habías pagado","había pagado","habíamos pagado","habíais pagado","habían pagado"],"subj":["pague","pagues","pague","paguemos","paguéis","paguen"],"imp":[null,"paga","pague","paguemos","pagad","paguen"]}},{"inf":"viajar","en":"to travel","cs":"a México","cp":"a México","imp":true,"f":{"pres":["viajo","viajas","viaja","viajamos","viajáis","viajan"],"perf":["he viajado","has viajado","ha viajado","hemos viajado","habéis viajado","han viajado"],"indef":["viajé","viajaste","viajó","viajamos","viajasteis","viajaron"],"imperf":["viajaba","viajabas","viajaba","viajábamos","viajabais","viajaban"],"fut":["viajaré","viajarás","viajará","viajaremos","viajaréis","viajarán"],"cond":["viajaría","viajarías","viajaría","viajaríamos","viajaríais","viajarían"],"plusc":["había viajado","habías viajado","había viajado","habíamos viajado","habíais viajado","habían viajado"],"subj":["viaje","viajes","viaje","viajemos","viajéis","viajen"],"imp":[null,"viaja","viaje","viajemos","viajad","viajen"]}},{"inf":"llamar","en":"to call","cs":"a la abuela","cp":"a la abuela","imp":true,"f":{"pres":["llamo","llamas","llama","llamamos","llamáis","llaman"],"perf":["he llamado","has llamado","ha llamado","hemos llamado","habéis llamado","han llamado"],"indef":["llamé","llamaste","llamó","llamamos","llamasteis","llamaron"],"imperf":["llamaba","llamabas","llamaba","llamábamos","llamabais","llamaban"],"fut":["llamaré","llamarás","llamará","llamaremos","llamaréis","llamarán"],"cond":["llamaría","llamarías","llamaría","llamaríamos","llamaríais","llamarían"],"plusc":["había llamado","habías llamado","había llamado","habíamos llamado","habíais llamado","habían llamado"],"subj":["llame","llames","llame","llamemos","llaméis","llamen"],"imp":[null,"llama","llame","llamemos","llamad","llamen"]}},{"inf":"tomar","en":"to take","cs":"el autobús","cp":"el autobús","imp":true,"f":{"pres":["tomo","tomas","toma","tomamos","tomáis","toman"],"perf":["he tomado","has tomado","ha tomado","hemos tomado","habéis tomado","han tomado"],"indef":["tomé","tomaste","tomó","tomamos","tomasteis","tomaron"],"imperf":["tomaba","tomabas","tomaba","tomábamos","tomabais","tomaban"],"fut":["tomaré","tomarás","tomará","tomaremos","tomaréis","tomarán"],"cond":["tomaría","tomarías","tomaría","tomaríamos","tomaríais","tomarían"],"plusc":["había tomado","habías tomado","había tomado","habíamos tomado","habíais tomado","habían tomado"],"subj":["tome","tomes","tome","tomemos","toméis","tomen"],"imp":[null,"toma","tome","tomemos","tomad","tomen"]}},{"inf":"cocinar","en":"to cook","cs":"la cena","cp":"la cena","imp":true,"f":{"pres":["cocino","cocinas","cocina","cocinamos","cocináis","cocinan"],"perf":["he cocinado","has cocinado","ha cocinado","hemos cocinado","habéis cocinado","han cocinado"],"indef":["cociné","cocinaste","cocinó","cocinamos","cocinasteis","cocinaron"],"imperf":["cocinaba","cocinabas","cocinaba","cocinábamos","cocinabais","cocinaban"],"fut":["cocinaré","cocinarás","cocinará","cocinaremos","cocinaréis","cocinarán"],"cond":["cocinaría","cocinarías","cocinaría","cocinaríamos","cocinaríais","cocinarían"],"plusc":["había cocinado","habías cocinado","había cocinado","habíamos cocinado","habíais cocinado","habían cocinado"],"subj":["cocine","cocines","cocine","cocinemos","cocinéis","cocinen"],"imp":[null,"cocina","cocine","cocinemos","cocinad","cocinen"]}},{"inf":"abrir","en":"to open","cs":"la ventana","cp":"la ventana","imp":true,"f":{"pres":["abro","abres","abre","abrimos","abrís","abren"],"perf":["he abierto","has abierto","ha abierto","hemos abierto","habéis abierto","han abierto"],"indef":["abrí","abriste","abrió","abrimos","abristeis","abrieron"],"imperf":["abría","abrías","abría","abríamos","abríais","abrían"],"fut":["abriré","abrirás","abrirá","abriremos","abriréis","abrirán"],"cond":["abriría","abrirías","abriría","abriríamos","abriríais","abrirían"],"plusc":["había abierto","habías abierto","había abierto","habíamos abierto","habíais abierto","habían abierto"],"subj":["abra","abras","abra","abramos","abráis","abran"],"imp":[null,"abre","abra","abramos","abrid","abran"]}},{"inf":"cerrar","en":"to close","cs":"la puerta","cp":"la puerta","imp":true,"f":{"pres":["cierro","cierras","cierra","cerramos","cerráis","cierran"],"perf":["he cerrado","has cerrado","ha cerrado","hemos cerrado","habéis cerrado","han cerrado"],"indef":["cerré","cerraste","cerró","cerramos","cerrasteis","cerraron"],"imperf":["cerraba","cerrabas","cerraba","cerrábamos","cerrabais","cerraban"],"fut":["cerraré","cerrarás","cerrará","cerraremos","cerraréis","cerrarán"],"cond":["cerraría","cerrarías","cerraría","cerraríamos","cerraríais","cerrarían"],"plusc":["había cerrado","habías cerrado","había cerrado","habíamos cerrado","habíais cerrado","habían cerrado"],"subj":["cierre","cierres","cierre","cerremos","cerréis","cierren"],"imp":[null,"cierra","cierre","cerremos","cerrad","cierren"]}},{"inf":"empezar","en":"to begin / to start","cs":"el trabajo","cp":"el trabajo","imp":true,"f":{"pres":["empiezo","empiezas","empieza","empezamos","empezáis","empiezan"],"perf":["he empezado","has empezado","ha empezado","hemos empezado","habéis empezado","han empezado"],"indef":["empecé","empezaste","empezó","empezamos","empezasteis","empezaron"],"imperf":["empezaba","empezabas","empezaba","empezábamos","empezabais","empezaban"],"fut":["empezaré","empezarás","empezará","empezaremos","empezaréis","empezarán"],"cond":["empezaría","empezarías","empezaría","empezaríamos","empezaríais","empezarían"],"plusc":["había empezado","habías empezado","había empezado","habíamos empezado","habíais empezado","habían empezado"],"subj":["empiece","empieces","empiece","empecemos","empecéis","empiecen"],"imp":[null,"empieza","empiece","empecemos","empezad","empiecen"]}},{"inf":"jugar","en":"to play","cs":"al fútbol","cp":"al fútbol","imp":true,"f":{"pres":["juego","juegas","juega","jugamos","jugáis","juegan"],"perf":["he jugado","has jugado","ha jugado","hemos jugado","habéis jugado","han jugado"],"indef":["jugué","jugaste","jugó","jugamos","jugasteis","jugaron"],"imperf":["jugaba","jugabas","jugaba","jugábamos","jugabais","jugaban"],"fut":["jugaré","jugarás","jugará","jugaremos","jugaréis","jugarán"],"cond":["jugaría","jugarías","jugaría","jugaríamos","jugaríais","jugarían"],"plusc":["había jugado","habías jugado","había jugado","habíamos jugado","habíais jugado","habían jugado"],"subj":["juegue","juegues","juegue","juguemos","juguéis","jueguen"],"imp":[null,"juega","juegue","juguemos","jugad","jueguen"]}},{"inf":"dormir","en":"to sleep","cs":"ocho horas","cp":"ocho horas","imp":true,"f":{"pres":["duermo","duermes","duerme","dormimos","dormís","duermen"],"perf":["he dormido","has dormido","ha dormido","hemos dormido","habéis dormido","han dormido"],"indef":["dormí","dormiste","durmió","dormimos","dormisteis","durmieron"],"imperf":["dormía","dormías","dormía","dormíamos","dormíais","dormían"],"fut":["dormiré","dormirás","dormirá","dormiremos","dormiréis","dormirán"],"cond":["dormiría","dormirías","dormiría","dormiríamos","dormiríais","dormirían"],"plusc":["había dormido","habías dormido","había dormido","habíamos dormido","habíais dormido","habían dormido"],"subj":["duerma","duermas","duerma","durmamos","durmáis","duerman"],"imp":[null,"duerme","duerma","durmamos","dormid","duerman"]}},{"inf":"pedir","en":"to ask for / to order","cs":"un taxi","cp":"un taxi","imp":true,"f":{"pres":["pido","pides","pide","pedimos","pedís","piden"],"perf":["he pedido","has pedido","ha pedido","hemos pedido","habéis pedido","han pedido"],"indef":["pedí","pediste","pidió","pedimos","pedisteis","pidieron"],"imperf":["pedía","pedías","pedía","pedíamos","pedíais","pedían"],"fut":["pediré","pedirás","pedirá","pediremos","pediréis","pedirán"],"cond":["pediría","pedirías","pediría","pediríamos","pediríais","pedirían"],"plusc":["había pedido","habías pedido","había pedido","habíamos pedido","habíais pedido","habían pedido"],"subj":["pida","pidas","pida","pidamos","pidáis","pidan"],"imp":[null,"pide","pida","pidamos","pedid","pidan"]}},{"inf":"entender","en":"to understand","cs":"la pregunta","cp":"la pregunta","imp":false,"f":{"pres":["entiendo","entiendes","entiende","entendemos","entendéis","entienden"],"perf":["he entendido","has entendido","ha entendido","hemos entendido","habéis entendido","han entendido"],"indef":["entendí","entendiste","entendió","entendimos","entendisteis","entendieron"],"imperf":["entendía","entendías","entendía","entendíamos","entendíais","entendían"],"fut":["entenderé","entenderás","entenderá","entenderemos","entenderéis","entenderán"],"cond":["entendería","entenderías","entendería","entenderíamos","entenderíais","entenderían"],"plusc":["había entendido","habías entendido","había entendido","habíamos entendido","habíais entendido","habían entendido"],"subj":["entienda","entiendas","entienda","entendamos","entendáis","entiendan"],"imp":[null,"entiende","entienda","entendamos","entended","entiendan"]}},{"inf":"encontrar","en":"to find","cs":"las llaves","cp":"las llaves","imp":true,"f":{"pres":["encuentro","encuentras","encuentra","encontramos","encontráis","encuentran"],"perf":["he encontrado","has encontrado","ha encontrado","hemos encontrado","habéis encontrado","han encontrado"],"indef":["encontré","encontraste","encontró","encontramos","encontrasteis","encontraron"],"imperf":["encontraba","encontrabas","encontraba","encontrábamos","encontrabais","encontraban"],"fut":["encontraré","encontrarás","encontrará","encontraremos","encontraréis","encontrarán"],"cond":["encontraría","encontrarías","encontraría","encontraríamos","encontraríais","encontrarían"],"plusc":["había encontrado","habías encontrado","había encontrado","habíamos encontrado","habíais encontrado","habían encontrado"],"subj":["encuentre","encuentres","encuentre","encontremos","encontréis","encuentren"],"imp":[null,"encuentra","encuentre","encontremos","encontrad","encuentren"]}},{"inf":"buscar","en":"to look for","cs":"un piso","cp":"un piso","imp":true,"f":{"pres":["busco","buscas","busca","buscamos","buscáis","buscan"],"perf":["he buscado","has buscado","ha buscado","hemos buscado","habéis buscado","han buscado"],"indef":["busqué","buscaste","buscó","buscamos","buscasteis","buscaron"],"imperf":["buscaba","buscabas","buscaba","buscábamos","buscabais","buscaban"],"fut":["buscaré","buscarás","buscará","buscaremos","buscaréis","buscarán"],"cond":["buscaría","buscarías","buscaría","buscaríamos","buscaríais","buscarían"],"plusc":["había buscado","habías buscado","había buscado","habíamos buscado","habíais buscado","habían buscado"],"subj":["busque","busques","busque","busquemos","busquéis","busquen"],"imp":[null,"busca","busque","busquemos","buscad","busquen"]}},{"inf":"necesitar","en":"to need","cs":"ayuda","cp":"ayuda","imp":false,"f":{"pres":["necesito","necesitas","necesita","necesitamos","necesitáis","necesitan"],"perf":["he necesitado","has necesitado","ha necesitado","hemos necesitado","habéis necesitado","han necesitado"],"indef":["necesité","necesitaste","necesitó","necesitamos","necesitasteis","necesitaron"],"imperf":["necesitaba","necesitabas","necesitaba","necesitábamos","necesitabais","necesitaban"],"fut":["necesitaré","necesitarás","necesitará","necesitaremos","necesitaréis","necesitarán"],"cond":["necesitaría","necesitarías","necesitaría","necesitaríamos","necesitaríais","necesitarían"],"plusc":["había necesitado","habías necesitado","había necesitado","habíamos necesitado","habíais necesitado","habían necesitado"],"subj":["necesite","necesites","necesite","necesitemos","necesitéis","necesiten"],"imp":[null,"necesita","necesite","necesitemos","necesitad","necesiten"]}},{"inf":"esperar","en":"to wait (for) / to hope","cs":"el tren","cp":"el tren","imp":true,"f":{"pres":["espero","esperas","espera","esperamos","esperáis","esperan"],"perf":["he esperado","has esperado","ha esperado","hemos esperado","habéis esperado","han esperado"],"indef":["esperé","esperaste","esperó","esperamos","esperasteis","esperaron"],"imperf":["esperaba","esperabas","esperaba","esperábamos","esperabais","esperaban"],"fut":["esperaré","esperarás","esperará","esperaremos","esperaréis","esperarán"],"cond":["esperaría","esperarías","esperaría","esperaríamos","esperaríais","esperarían"],"plusc":["había esperado","habías esperado","había esperado","habíamos esperado","habíais esperado","habían esperado"],"subj":["espere","esperes","espere","esperemos","esperéis","esperen"],"imp":[null,"espera","espere","esperemos","esperad","esperen"]}},{"inf":"traer","en":"to bring","cs":"el vino","cp":"el vino","imp":true,"f":{"pres":["traigo","traes","trae","traemos","traéis","traen"],"perf":["he traído","has traído","ha traído","hemos traído","habéis traído","han traído"],"indef":["traje","trajiste","trajo","trajimos","trajisteis","trajeron"],"imperf":["traía","traías","traía","traíamos","traíais","traían"],"fut":["traeré","traerás","traerá","traeremos","traeréis","traerán"],"cond":["traería","traerías","traería","traeríamos","traeríais","traerían"],"plusc":["había traído","habías traído","había traído","habíamos traído","habíais traído","habían traído"],"subj":["traiga","traigas","traiga","traigamos","traigáis","traigan"],"imp":[null,"trae","traiga","traigamos","traed","traigan"]}},{"inf":"oír","en":"to hear","cs":"la música","cp":"la música","imp":false,"f":{"pres":["oigo","oyes","oye","oímos","oís","oyen"],"perf":["he oído","has oído","ha oído","hemos oído","habéis oído","han oído"],"indef":["oí","oíste","oyó","oímos","oísteis","oyeron"],"imperf":["oía","oías","oía","oíamos","oíais","oían"],"fut":["oiré","oirás","oirá","oiremos","oiréis","oirán"],"cond":["oiría","oirías","oiría","oiríamos","oiríais","oirían"],"plusc":["había oído","habías oído","había oído","habíamos oído","habíais oído","habían oído"],"subj":["oiga","oigas","oiga","oigamos","oigáis","oigan"],"imp":[null,"oye","oiga","oigamos","oíd","oigan"]}},{"inf":"conducir","en":"to drive","cs":"el coche","cp":"el coche","imp":true,"f":{"pres":["conduzco","conduces","conduce","conducimos","conducís","conducen"],"perf":["he conducido","has conducido","ha conducido","hemos conducido","habéis conducido","han conducido"],"indef":["conduje","condujiste","condujo","condujimos","condujisteis","condujeron"],"imperf":["conducía","conducías","conducía","conducíamos","conducíais","conducían"],"fut":["conduciré","conducirás","conducirá","conduciremos","conduciréis","conducirán"],"cond":["conduciría","conducirías","conduciría","conduciríamos","conduciríais","conducirían"],"plusc":["había conducido","habías conducido","había conducido","habíamos conducido","habíais conducido","habían conducido"],"subj":["conduzca","conduzcas","conduzca","conduzcamos","conduzcáis","conduzcan"],"imp":[null,"conduce","conduzca","conduzcamos","conducid","conduzcan"]}},{"inf":"bailar","en":"to dance","cs":"salsa","cp":"salsa","imp":true,"f":{"pres":["bailo","bailas","baila","bailamos","bailáis","bailan"],"perf":["he bailado","has bailado","ha bailado","hemos bailado","habéis bailado","han bailado"],"indef":["bailé","bailaste","bailó","bailamos","bailasteis","bailaron"],"imperf":["bailaba","bailabas","bailaba","bailábamos","bailabais","bailaban"],"fut":["bailaré","bailarás","bailará","bailaremos","bailaréis","bailarán"],"cond":["bailaría","bailarías","bailaría","bailaríamos","bailaríais","bailarían"],"plusc":["había bailado","habías bailado","había bailado","habíamos bailado","habíais bailado","habían bailado"],"subj":["baile","bailes","baile","bailemos","bailéis","bailen"],"imp":[null,"baila","baile","bailemos","bailad","bailen"]}},{"inf":"escuchar","en":"to listen to","cs":"la radio","cp":"la radio","imp":true,"f":{"pres":["escucho","escuchas","escucha","escuchamos","escucháis","escuchan"],"perf":["he escuchado","has escuchado","ha escuchado","hemos escuchado","habéis escuchado","han escuchado"],"indef":["escuché","escuchaste","escuchó","escuchamos","escuchasteis","escucharon"],"imperf":["escuchaba","escuchabas","escuchaba","escuchábamos","escuchabais","escuchaban"],"fut":["escucharé","escucharás","escuchará","escucharemos","escucharéis","escucharán"],"cond":["escucharía","escucharías","escucharía","escucharíamos","escucharíais","escucharían"],"plusc":["había escuchado","habías escuchado","había escuchado","habíamos escuchado","habíais escuchado","habían escuchado"],"subj":["escuche","escuches","escuche","escuchemos","escuchéis","escuchen"],"imp":[null,"escucha","escuche","escuchemos","escuchad","escuchen"]}},{"inf":"aprender","en":"to learn","cs":"algo nuevo","cp":"algo nuevo","imp":true,"f":{"pres":["aprendo","aprendes","aprende","aprendemos","aprendéis","aprenden"],"perf":["he aprendido","has aprendido","ha aprendido","hemos aprendido","habéis aprendido","han aprendido"],"indef":["aprendí","aprendiste","aprendió","aprendimos","aprendisteis","aprendieron"],"imperf":["aprendía","aprendías","aprendía","aprendíamos","aprendíais","aprendían"],"fut":["aprenderé","aprenderás","aprenderá","aprenderemos","aprenderéis","aprenderán"],"cond":["aprendería","aprenderías","aprendería","aprenderíamos","aprenderíais","aprenderían"],"plusc":["había aprendido","habías aprendido","había aprendido","habíamos aprendido","habíais aprendido","habían aprendido"],"subj":["aprenda","aprendas","aprenda","aprendamos","aprendáis","aprendan"],"imp":[null,"aprende","aprenda","aprendamos","aprended","aprendan"]}},{"inf":"correr","en":"to run","cs":"en el parque","cp":"en el parque","imp":true,"f":{"pres":["corro","corres","corre","corremos","corréis","corren"],"perf":["he corrido","has corrido","ha corrido","hemos corrido","habéis corrido","han corrido"],"indef":["corrí","corriste","corrió","corrimos","corristeis","corrieron"],"imperf":["corría","corrías","corría","corríamos","corríais","corrían"],"fut":["correré","correrás","correrá","correremos","correréis","correrán"],"cond":["correría","correrías","correría","correríamos","correríais","correrían"],"plusc":["había corrido","habías corrido","había corrido","habíamos corrido","habíais corrido","habían corrido"],"subj":["corra","corras","corra","corramos","corráis","corran"],"imp":[null,"corre","corra","corramos","corred","corran"]}},{"inf":"limpiar","en":"to clean","cs":"la cocina","cp":"la cocina","imp":true,"f":{"pres":["limpio","limpias","limpia","limpiamos","limpiáis","limpian"],"perf":["he limpiado","has limpiado","ha limpiado","hemos limpiado","habéis limpiado","han limpiado"],"indef":["limpié","limpiaste","limpió","limpiamos","limpiasteis","limpiaron"],"imperf":["limpiaba","limpiabas","limpiaba","limpiábamos","limpiabais","limpiaban"],"fut":["limpiaré","limpiarás","limpiará","limpiaremos","limpiaréis","limpiarán"],"cond":["limpiaría","limpiarías","limpiaría","limpiaríamos","limpiaríais","limpiarían"],"plusc":["había limpiado","habías limpiado","había limpiado","habíamos limpiado","habíais limpiado","habían limpiado"],"subj":["limpie","limpies","limpie","limpiemos","limpiéis","limpien"],"imp":[null,"limpia","limpie","limpiemos","limpiad","limpien"]}},{"inf":"terminar","en":"to finish","cs":"el proyecto","cp":"el proyecto","imp":true,"f":{"pres":["termino","terminas","termina","terminamos","termináis","terminan"],"perf":["he terminado","has terminado","ha terminado","hemos terminado","habéis terminado","han terminado"],"indef":["terminé","terminaste","terminó","terminamos","terminasteis","terminaron"],"imperf":["terminaba","terminabas","terminaba","terminábamos","terminabais","terminaban"],"fut":["terminaré","terminarás","terminará","terminaremos","terminaréis","terminarán"],"cond":["terminaría","terminarías","terminaría","terminaríamos","terminaríais","terminarían"],"plusc":["había terminado","habías terminado","había terminado","habíamos terminado","habíais terminado","habían terminado"],"subj":["termine","termines","termine","terminemos","terminéis","terminen"],"imp":[null,"termina","termine","terminemos","terminad","terminen"]}},{"inf":"ayudar","en":"to help","cs":"a los vecinos","cp":"a los vecinos","imp":true,"f":{"pres":["ayudo","ayudas","ayuda","ayudamos","ayudáis","ayudan"],"perf":["he ayudado","has ayudado","ha ayudado","hemos ayudado","habéis ayudado","han ayudado"],"indef":["ayudé","ayudaste","ayudó","ayudamos","ayudasteis","ayudaron"],"imperf":["ayudaba","ayudabas","ayudaba","ayudábamos","ayudabais","ayudaban"],"fut":["ayudaré","ayudarás","ayudará","ayudaremos","ayudaréis","ayudarán"],"cond":["ayudaría","ayudarías","ayudaría","ayudaríamos","ayudaríais","ayudarían"],"plusc":["había ayudado","habías ayudado","había ayudado","habíamos ayudado","habíais ayudado","habían ayudado"],"subj":["ayude","ayudes","ayude","ayudemos","ayudéis","ayuden"],"imp":[null,"ayuda","ayude","ayudemos","ayudad","ayuden"]}},{"inf":"recordar","en":"to remember","cs":"el nombre","cp":"el nombre","imp":false,"f":{"pres":["recuerdo","recuerdas","recuerda","recordamos","recordáis","recuerdan"],"perf":["he recordado","has recordado","ha recordado","hemos recordado","habéis recordado","han recordado"],"indef":["recordé","recordaste","recordó","recordamos","recordasteis","recordaron"],"imperf":["recordaba","recordabas","recordaba","recordábamos","recordabais","recordaban"],"fut":["recordaré","recordarás","recordará","recordaremos","recordaréis","recordarán"],"cond":["recordaría","recordarías","recordaría","recordaríamos","recordaríais","recordarían"],"plusc":["había recordado","habías recordado","había recordado","habíamos recordado","habíais recordado","habían recordado"],"subj":["recuerde","recuerdes","recuerde","recordemos","recordéis","recuerden"],"imp":[null,"recuerda","recuerde","recordemos","recordad","recuerden"]}},{"inf":"preferir","en":"to prefer","cs":"el té","cp":"el té","imp":false,"f":{"pres":["prefiero","prefieres","prefiere","preferimos","preferís","prefieren"],"perf":["he preferido","has preferido","ha preferido","hemos preferido","habéis preferido","han preferido"],"indef":["preferí","preferiste","prefirió","preferimos","preferisteis","prefirieron"],"imperf":["prefería","preferías","prefería","preferíamos","preferíais","preferían"],"fut":["preferiré","preferirás","preferirá","preferiremos","preferiréis","preferirán"],"cond":["preferiría","preferirías","preferiría","preferiríamos","preferiríais","preferirían"],"plusc":["había preferido","habías preferido","había preferido","habíamos preferido","habíais preferido","habían preferido"],"subj":["prefiera","prefieras","prefiera","prefiramos","prefiráis","prefieran"],"imp":[null,"prefiere","prefiera","prefiramos","preferid","prefieran"]}},{"inf":"seguir","en":"to follow / to continue","cs":"las instrucciones","cp":"las instrucciones","imp":true,"f":{"pres":["sigo","sigues","sigue","seguimos","seguís","siguen"],"perf":["he seguido","has seguido","ha seguido","hemos seguido","habéis seguido","han seguido"],"indef":["seguí","seguiste","siguió","seguimos","seguisteis","siguieron"],"imperf":["seguía","seguías","seguía","seguíamos","seguíais","seguían"],"fut":["seguiré","seguirás","seguirá","seguiremos","seguiréis","seguirán"],"cond":["seguiría","seguirías","seguiría","seguiríamos","seguiríais","seguirían"],"plusc":["había seguido","habías seguido","había seguido","habíamos seguido","habíais seguido","habían seguido"],"subj":["siga","sigas","siga","sigamos","sigáis","sigan"],"imp":[null,"sigue","siga","sigamos","seguid","sigan"]}},{"inf":"perder","en":"to lose / to miss","cs":"el autobús","cp":"el autobús","imp":false,"f":{"pres":["pierdo","pierdes","pierde","perdemos","perdéis","pierden"],"perf":["he perdido","has perdido","ha perdido","hemos perdido","habéis perdido","han perdido"],"indef":["perdí","perdiste","perdió","perdimos","perdisteis","perdieron"],"imperf":["perdía","perdías","perdía","perdíamos","perdíais","perdían"],"fut":["perderé","perderás","perderá","perderemos","perderéis","perderán"],"cond":["perdería","perderías","perdería","perderíamos","perderíais","perderían"],"plusc":["había perdido","habías perdido","había perdido","habíamos perdido","habíais perdido","habían perdido"],"subj":["pierda","pierdas","pierda","perdamos","perdáis","pierdan"],"imp":[null,"pierde","pierda","perdamos","perded","pierdan"]}},{"inf":"mirar","en":"to look at","cs":"las fotos","cp":"las fotos","imp":true,"f":{"pres":["miro","miras","mira","miramos","miráis","miran"],"perf":["he mirado","has mirado","ha mirado","hemos mirado","habéis mirado","han mirado"],"indef":["miré","miraste","miró","miramos","mirasteis","miraron"],"imperf":["miraba","mirabas","miraba","mirábamos","mirabais","miraban"],"fut":["miraré","mirarás","mirará","miraremos","miraréis","mirarán"],"cond":["miraría","mirarías","miraría","miraríamos","miraríais","mirarían"],"plusc":["había mirado","habías mirado","había mirado","habíamos mirado","habíais mirado","habían mirado"],"subj":["mire","mires","mire","miremos","miréis","miren"],"imp":[null,"mira","mire","miremos","mirad","miren"]}}];
+const TENSES = [
+  {k:"pres",  lvl:1, es:"Presente",               nl:"tegenwoordige tijd · ik eet",                   sig:["Normalmente {s}","Todos los días {s}","{S} siempre"]},
+  {k:"perf",  lvl:1, es:"Pretérito perfecto",     nl:"voltooid tegenwoordige tijd · ik heb gegeten",  sig:["Hoy {s}","Esta semana {s}","Este año {s}"]},
+  {k:"indef", lvl:1, es:"Pretérito indefinido",   nl:"verleden tijd, afgerond · ik at (gisteren)",    sig:["Ayer {s}","El año pasado {s}","Anoche {s}"]},
+  {k:"imperf",lvl:1, es:"Pretérito imperfecto",   nl:"verleden tijd, gewoonte · ik at (vroeger altijd)", sig:["Antes {s} siempre","En aquella época {s}","En verano {s} siempre"]},
+  {k:"fut",   lvl:2, es:"Futuro",                 nl:"toekomende tijd · ik zal eten",                 sig:["Mañana {s}","El próximo año {s}","Pronto {s}"]},
+  {k:"imp",   lvl:2, es:"Imperativo",             nl:"gebiedende wijs · eet!",                        sig:[]},
+  {k:"cond",  lvl:3, es:"Condicional",            nl:"voorwaardelijke wijs · ik zou eten",            sig:["Con más tiempo, {s}","Con más dinero, {s}","En ese caso {s}"]},
+  {k:"plusc", lvl:3, es:"Pluscuamperfecto",       nl:"voltooid verleden tijd · ik had gegeten",       sig:["A las ocho {s} ya","Antes de la cena {s} ya","Cuando llegó Ana, {s} ya"]},
+  {k:"subj",  lvl:3, es:"Presente de subjuntivo", nl:"aanvoegende wijs · (dat) ik eet",               sig:["Es importante que {s}","Mi madre quiere que {s}","Ojalá {s}"]},
+];
+const T_BY = Object.fromEntries(TENSES.map(t=>[t.k,t]));
+const LEVELS = [
+  {n:1, name:"Niveau 1 · A2", sub:"presente, perfecto, indefinido, imperfecto"},
+  {n:2, name:"Niveau 2 · A2", sub:"futuro, gebiedende wijs"},
+  {n:3, name:"Niveau 3 · B1", sub:"condicional, pluscuamperfecto, subjuntivo"},
+];
+const PERSONS = ["yo","tú","él / ella / usted","nosotros","vosotros","ellos / ellas / ustedes"];
+const SUBJ_VARIANTS = [["yo"],["tú"],["él","ella","usted"],["nosotros","nosotras"],["vosotros","vosotras"],["ellos","ellas","ustedes"]];
+const IMP_PERSONS = [null,"tú","usted","nosotros","vosotros","ustedes"];
+const EXTRA_OK = {"ir|imp|3":["vamos"]};   // naast 'vayamos' ook gangbaar
+const V_BY = Object.fromEntries(CONJ.map((v,i)=>[v.inf,Object.assign(v,{i})]));
+const BLOCK = 10; // eerst 10 werkwoorden door alle tijden van een niveau, dan de volgende 10
+
+const cprog = key => state.c[key];
+function conjItems(){
+  const out=[];
+  for(const t of TENSES){ if(!state.levels.includes(t.lvl)) continue;
+    for(const v of CONJ){ if(t.k==="imp" && !v.imp) continue; out.push({key:v.inf+"|"+t.k, v, t}); } }
+  return out;
+}
+const tIdx = k => TENSES.findIndex(t=>t.k===k);
+const crank = it => it.t.lvl*1e6 + Math.floor(it.v.i/BLOCK)*1e4 + tIdx(it.t.k)*100 + (it.v.i%BLOCK);
+function conjCounts(){
+  const now=Date.now(); let due=0,nw=0,known=0; const items=conjItems();
+  for(const it of items){ const p=cprog(it.key); if(!p) nw++; else { if(p.due<=now) due++; if(p.box>=KNOWN_FROM) known++; } }
+  return {due,nw,known,total:items.length};
+}
+function renderConjHome(){
+  const c=conjCounts();
+  $("st-due").textContent=c.due; $("st-new").textContent=c.nw; $("st-known").textContent=c.known;
+  $("subtitle").textContent=`${CONJ.length} werkwoorden · ${c.total} combinaties`;
+  const box=$("levels"); box.textContent="";
+  for(const L of LEVELS){
+    const b=el("button","toggle"); b.setAttribute("role","switch"); b.setAttribute("aria-checked",state.levels.includes(L.n));
+    const t=el("span",null,L.name); t.append(el("small",null,L.sub)); b.append(t, el("span","switch")); b.lastChild.setAttribute("aria-hidden","true");
+    b.onclick=()=>{ const on=state.levels.includes(L.n); if(on && state.levels.length===1) return;
+      state.levels = on ? state.levels.filter(x=>x!==L.n) : [...state.levels,L.n].sort(); save(); renderHome(); };
+    box.append(b);
+  }
+  const n=Math.min(c.due,MAX_REVIEW)+Math.min(c.nw,state.newPer);
+  $("start").textContent = n>0 ? `Start vervoegen · ${n} kaarten` : "Alles bijgewerkt · extra oefenen";
+  $("open-list").textContent="Vervoegtabellen bekijken";
+  $("newper-label").textContent="Nieuwe combinaties per ronde";
+}
+
+/* sessie */
+let CS=null;
+function startConj(){
+  const now=Date.now(), items=conjItems();
+  const due=items.filter(it=>{ const p=cprog(it.key); return p&&p.due<=now; }).sort((a,b)=>cprog(a.key).due-cprog(b.key).due).slice(0,MAX_REVIEW);
+  const fresh=items.filter(it=>!cprog(it.key)).sort((a,b)=>crank(a)-crank(b)).slice(0,state.newPer);
+  let q, extra=false;
+  if(due.length+fresh.length) q=shuffle(due).concat(fresh);
+  else { extra=true; q=shuffle(items.slice()).sort((a,b)=>(cprog(a.key)?.box||0)-(cprog(b.key)?.box||0)).slice(0,EXTRA_SIZE); }
+  if(!q.length) return;
+  CS={queue:q.map(it=>it.key), total:q.length, finished:0, firstTry:0, missed:new Set(), extra, cur:null};
+  show("conj"); nextConj();
+}
+const pick = a => a[Math.floor(Math.random()*a.length)];
+function makeCard(key){
+  const [inf,tk]=key.split("|"), v=V_BY[inf], t=T_BY[tk];
+  const persons = tk==="imp" ? [1,2,3,4,5] : [0,1,2,3,4,5];
+  const p = pick(persons), form=v.f[tk][p];
+  const plural = p>=3, comp = plural ? v.cp : v.cs;
+  let before, subjLabel;
+  if(tk==="imp"){ subjLabel=IMP_PERSONS[p]; before="¡"; }
+  else {
+    const s=pick(SUBJ_VARIANTS[p]); subjLabel=s;
+    const tpl=pick(t.sig); before=tpl.replace("{s}",s).replace("{S}",s[0].toUpperCase()+s.slice(1));
+  }
+  const after = tk==="imp" ? (comp?" "+comp:"")+", por favor!" : (comp?" "+comp:"")+".";
+  const full = tk==="imp" ? "¡"+cap(form)+(comp?" "+comp:"")+", por favor!" : (before+" "+form+after).replace(/^./,c=>c.toUpperCase());
+  const ok=[form, ...(EXTRA_OK[`${inf}|${tk}|${p}`]||[])];
+  return {key,v,t,p,form,ok,before,after,subjLabel,full};
+}
+const cap = s => s[0].toUpperCase()+s.slice(1);
+function nextConj(){
+  if(!CS.queue.length) return finishConj();
+  const c=CS.cur=makeCard(CS.queue[0]);
+  $("ccount").textContent=`${CS.finished}/${CS.total}`; $("cbar").style.width=(CS.finished/CS.total*100)+"%";
+  $("c-tense").textContent=c.t.es; $("c-tense-nl").textContent=c.t.nl;
+  $("c-verb").textContent=c.v.inf; $("c-verb-en").textContent=c.v.en; $("c-person").textContent=c.subjLabel;
+  $("c-new").hidden=!!cprog(c.key);
+  const s=$("c-sentence"); s.textContent="";
+  const gap=el("span","gap","___");
+  if(c.t.k==="imp"){ s.append("¡", gap, c.after); }
+  else { const b=c.before.replace(/^./,x=>x.toUpperCase()); s.append(b+" ", gap, c.after); }
+  const inp=$("c-input"); inp.value=""; inp.disabled=false; inp.className="answer";
+  $("c-check").hidden=false; $("c-after").hidden=true; $("c-feedback").textContent=""; $("c-feedback").className="feedback";
+  $("c-override").hidden=true; $("c-table").textContent="";
+  setTimeout(()=>{ try{ inp.focus({preventScroll:true}); }catch(e){} },50);
+}
+const normAns = s => s.toLowerCase().replace(/[¡!¿?.,]/g," ").replace(/\s+/g," ").trim()
+  .replace(/^(yo|tú|tu|él|el|ella|usted|nosotros|nosotras|vosotros|vosotras|ellos|ellas|ustedes) /,"");
+function checkConj(){
+  const c=CS.cur; if(!c || !$("c-after").hidden) return;
+  const typed=normAns($("c-input").value); if(!typed){ $("c-input").focus(); return; }
+  const exact=c.ok.some(o=>normAns(o)===typed), loose=!exact && c.ok.some(o=>fold(normAns(o))===fold(typed));
+  const good=exact||loose;
+  c.result=good;
+  $("c-input").disabled=true; $("c-input").classList.add(good?"right":"wrong");
+  const fb=$("c-feedback"); fb.className="feedback "+(good?"ok":"miss");
+  fb.textContent = exact ? "✓ Goed!" : loose ? `✓ Bijna: let op het accent → ${c.form}` : `✗ Het is: ${c.form}`;
+  $("c-sentence").querySelector(".gap").textContent=c.form;
+  $("c-sentence").querySelector(".gap").classList.add("filled");
+  renderTable($("c-table"), c.v, c.t.k, c.p);
+  $("c-override").hidden=good;
+  $("c-check").hidden=true; $("c-after").hidden=false;
+  setTimeout(()=>{ try{ $("c-next").focus({preventScroll:true}); }catch(e){} },30);
+}
+function gradeConj(knew){
+  const c=CS.cur, id=CS.queue.shift();
+  const p=state.c[id]||{box:0,due:0,seen:0,lapses:0}; p.seen++;
+  if(knew){
+    CS.finished++;
+    if(CS.missed.has(id)){ p.box=1; p.due=today0()+INTERVALS[1]*DAY; }
+    else { CS.firstTry++; if(!CS.extra||p.box===0){ p.box=Math.min(p.box+1,MAXBOX); p.due=today0()+INTERVALS[p.box]*DAY; } }
+  } else {
+    if(!CS.missed.has(id)){ if(p.box>0) p.lapses++; CS.missed.add(id); }
+    p.box=1; p.due=Date.now();
+    CS.queue.splice(Math.min(REINSERT_AFTER,CS.queue.length),0,id); // straks nog eens, met een andere persoon
+  }
+  state.c[id]=p; save(); nextConj();
+}
+function renderTable(box, v, tk, hi){
+  box.textContent="";
+  const t=T_BY[tk], tbl=el("div","ctable");
+  v.f[tk].forEach((f,i)=>{
+    if(f==null) return;
+    const r=el("div","crow"+(i===hi?" hi":""));
+    r.append(el("span","cp", tk==="imp"?IMP_PERSONS[i]:PERSONS[i]), el("span","cf",f)); tbl.append(r);
+  });
+  box.append(tbl);
+}
+function finishConj(){
+  const c=conjCounts(), tomorrow=today0()+DAY;
+  const dueTomorrow=conjItems().filter(it=>{ const p=cprog(it.key); return p&&p.due<=tomorrow; }).length;
+  $("done-msg").textContent=CS.extra?"Extra ronde gedaan. Je schema blijft gewoon staan.":"Kom morgen terug voor de volgende herhaling.";
+  const rows=$("done-rows"); rows.textContent="";
+  for(const [k,v] of [["Vervoegingen geoefend",CS.total],["In één keer goed",CS.firstTry],["Onder de knie (totaal)",`${c.known} / ${c.total}`],["Morgen te herhalen",dueTomorrow]]){
+    const r=el("div"); r.append(el("span",null,k), el("b",null,String(v))); rows.append(r);
+  }
+  show("done");
+}
+$("c-check").onclick=checkConj;
+$("c-next").onclick=()=>gradeConj(CS.cur.result);
+$("c-override").onclick=()=>{ CS.cur.result=true; gradeConj(true); };
+$("c-speak").innerHTML=SPK+"Luister"; $("c-speak").hidden=!canSpeak;
+$("c-speak").onclick=()=>speak(CS.cur.full);
+$("c-input").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); e.stopPropagation(); checkConj(); } });
+document.addEventListener("keydown",e=>{ if($("conj").hidden || e.key!=="Enter" || $("c-after").hidden) return; if(document.activeElement && document.activeElement.tagName==="BUTTON") return; e.preventDefault(); $("c-next").click(); });
+$("cquit").onclick=()=>{ renderHome(); show("home"); };
+for(const b of document.querySelectorAll("#accents button")){
+  b.addEventListener("pointerdown",e=>e.preventDefault()); // focus in het invoerveld houden
+  b.onclick=()=>{ const i=$("c-input"); if(i.disabled) return; const s=i.selectionStart??i.value.length, e2=i.selectionEnd??s;
+    i.value=i.value.slice(0,s)+b.textContent+i.value.slice(e2); i.setSelectionRange(s+1,s+1); i.focus(); };
+}
+
+/* tabellen */
+function renderTables(){
+  const q=fold($("tsearch").value.trim()), body=$("tables-body"); body.textContent="";
+  const vs=CONJ.filter(v=>!q||fold(v.inf).includes(q)||v.en.includes(q));
+  for(const v of vs){
+    const d=el("details","vt"); const s=el("summary"); s.append(el("b",null,v.inf), el("span",null,v.en)); d.append(s);
+    d.addEventListener("toggle",()=>{ if(!d.open||d.dataset.done) return; d.dataset.done=1;
+      for(const t of TENSES){ if(t.k==="imp"&&!v.imp) continue; const w=el("div","vt-tense"); w.append(el("span","eyebrow",t.es)); const tb=el("div"); renderTable(tb,v,t.k,-1); w.append(tb); d.append(w); }
+    });
+    body.append(d);
+  }
+  if(!vs.length) body.append(el("p","empty","Geen werkwoord gevonden."));
+}
+let tsT; $("tsearch").addEventListener("input",()=>{ clearTimeout(tsT); tsT=setTimeout(renderTables,120); });
+$("tables-back").onclick=()=>show("home");
 
 /* ---------- Start ---------- */
 async function init(){
